@@ -1,29 +1,27 @@
 import React from 'react';
 import CurrencyExchange from '../../components/CurrencyExchange/CurrencyExchange';
-import { CurrencyState, CurrencyType } from '../../redux/currencyReducer';
-import { Dispatch } from 'redux';
+import {CurrencyType} from '../../redux/currencyReducer';
 import {
     ChangeActionAC,
     ChangeCurrencyFieldAC,
     СhangeCurrentCurrencyAC,
-    CurrencyReducersTypes
+    typedDispatch
 } from '../../redux/actions';
-import { connect, ConnectedProps } from 'react-redux';
+import {selectCurrencies} from "../../redux/selectors";
+import {useSelector} from "react-redux";
 
-const CurrencyEContainer: React.FC<TProps> = props => {
-
+export const CurrencyExchangeContainer: React.FC = () => {
+    const dispatch = typedDispatch()
     const {
         currencies,
         currentCurrency,
         isBuying,
         amountOfBYN,
-        amountOfCurrency,
-        setCurrencyAmount,
-        setAction,
-        changeCurrency,
-    } = props;
+        amountOfCurrency
+    } = useSelector(selectCurrencies)
 
     let currencyRate: number = 0;
+
     const currenciesName = currencies.map((currency: CurrencyType) => {
         if (currency.currencyName === currentCurrency) {
             currencyRate = isBuying ? currency.buyRate : currency.sellRate;
@@ -38,25 +36,27 @@ const CurrencyEContainer: React.FC<TProps> = props => {
             const trigger: string = e.currentTarget.dataset.currency;
             if (trigger === 'byn') {
                 if (value === '') {
-                    setCurrencyAmount(value, value);
+                    dispatch(ChangeCurrencyFieldAC(value, value));
                 } else {
-                    setCurrencyAmount(value, (+Number(value).toFixed(2) / currencyRate).toFixed(2));
+                    dispatch(ChangeCurrencyFieldAC(value, (+Number(value).toFixed(2) / currencyRate).toFixed(2)));
                 }
             } else {
                 if (value === '') {
-                    setCurrencyAmount(value, value);
+                    dispatch(ChangeCurrencyFieldAC(value, value));
                 } else {
-                    setCurrencyAmount((+Number(value).toFixed(2) * currencyRate).toFixed(2), value);
+                    dispatch(ChangeCurrencyFieldAC((+Number(value).toFixed(2) * currencyRate).toFixed(2), value));
                 }
             }
         }
     };
     const changeAction = (e: React.MouseEvent<HTMLSpanElement>) => {
-        e.currentTarget.dataset.action === 'buy' ? setAction(true) : setAction(false);
+        e.currentTarget.dataset.action === 'buy'
+            ? dispatch(ChangeActionAC(true))
+            : dispatch(ChangeActionAC(false));
     };
 
     const changeCurrentCurrency = (e: React.MouseEvent<HTMLLIElement>) => {
-        e.currentTarget.dataset.currency && changeCurrency(e.currentTarget.dataset.currency);
+        e.currentTarget.dataset.currency && dispatch(СhangeCurrentCurrencyAC(e.currentTarget.dataset.currency));
     };
 
     return (
@@ -75,34 +75,4 @@ const CurrencyEContainer: React.FC<TProps> = props => {
         </React.Fragment>
     );
 };
-
-const mapStateToProps = ( { currency } : {currency: CurrencyState} ): CurrencyState => {
-    return {
-        currencies: currency.currencies,
-        currentCurrency: currency.currentCurrency,
-        isBuying: currency.isBuying,
-        amountOfBYN: currency.amountOfBYN,
-        amountOfCurrency: currency.amountOfCurrency,
-    };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch<CurrencyReducersTypes>) : any => {
-    return {
-        setCurrencyAmount(amountOfBYN: string, amountOfCurrency: string) {
-            dispatch(ChangeCurrencyFieldAC(amountOfBYN, amountOfCurrency));
-        },
-        setAction(isBuying: boolean) {
-            dispatch(ChangeActionAC(isBuying));
-        },
-        changeCurrency(currency: string) {
-            dispatch(СhangeCurrentCurrencyAC(currency));
-        },
-    };
-};
-
-const connector = connect(mapStateToProps, mapDispatchToProps);
-
-type TProps = ConnectedProps<typeof connector>;
-
-export default connector(CurrencyEContainer);
 

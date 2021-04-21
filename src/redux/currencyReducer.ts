@@ -5,6 +5,7 @@ export type CurrencyType = {
     buyRate: number;
     sellRate: number;
 };
+
 export type CurrencyState = {
     currencies: Array<CurrencyType>;
     currentCurrency: string;
